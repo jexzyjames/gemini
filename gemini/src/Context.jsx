@@ -171,7 +171,6 @@ setPrevPrompt(prev=> [...prev, input])
     setShowResult,
     showResult,
     setUser,
-    showResult,
     resultData,
     setRecentPrompt,
     setPrevPrompt,
