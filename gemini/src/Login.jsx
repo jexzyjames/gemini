@@ -35,14 +35,15 @@ const Login = ({ setPopUp }) => {
       toast.error(err);
     }
   };
+  useEffect(()=>{},[logState])
 
   const Login = async () => {
     try {
       await login(email, password);
-      alert("Logged in!");
+      toast.success("Logged in!");
       setPopUp(false);
     } catch (error) {
-      console.error("Login error:", error.message);
+      toast.error("Login error:", error.message);
     }
   };
 
@@ -125,8 +126,12 @@ const Login = ({ setPopUp }) => {
                 </span>
               </div>
             </div>
-            <p className="text-center">Or</p>
-            <div
+<div className="flex justify-center items-center ">
+    <div className="border-b border-gray-400 w-30"></div>
+    <span className="mx-2 text-gray-400">OR</span>
+    <div className="border-b border-gray-400 w-30"></div>
+
+    </div>            <div
               onClick={() => GoogleSignIn()}
               className="flex border rounded-3xl w-full justify-center hover:bg-slate-950 hover:text-white my-2 cursor-pointer "
             >

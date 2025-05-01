@@ -30,13 +30,13 @@ const Register = ({ setLogState }) => {
       const userCredential = await signup(email, password);
       const user = userCredential.user;
       toast.success("Signed up successfully");
+      setLogState(false);
       console.log(user);
-      setLogState(true);
     } catch (error) {
       toast.error(error.code);
       console.error("Signup error:", error);
     }
-    setLogState(true);
+    setLogState(false);
   };
   return (
     <div className=" fade w-full  m-0 max-w-[600px]">
