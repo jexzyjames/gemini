@@ -36,16 +36,12 @@ const Main = () => {
     setInput,
     input,
   } = useContext(Context);
-  
-  
-    // Call your onSent function with the input
-  
 
- 
+  // Call your onSent function with the input
+
   useEffect(() => {}, [recentPrompt]);
   const [extended, setExtended] = useState(false);
 
-  
   return (
     <div className=" w-full fade flex m-0 relative h-screen text-black ">
       <div
@@ -77,29 +73,34 @@ const Main = () => {
               onClick={() => setLogOut(!logOut)}
               className="right-2 cursor-pointer flex justify-end"
             >
-             {user &&<FaTimes size={20} className="bg-red-400 rounded-full p-2" /> }
+              {user && (
+                <FaTimes size={20} className="bg-red-400 rounded-full p-2" />
+              )}
             </span>
-            <img className='w-9 flex m-auto items-center justify-center rounded-full' src={user?.photoURL || userImg } alt="" />
-            <p
-              className="cursor-pointer flex-col items-center flex gap-2  text-sky-400"
-            >
+            <img
+              className="w-9 flex m-auto items-center justify-center rounded-full"
+              src={user?.photoURL || userImg}
+              alt=""
+            />
+            <p className="cursor-pointer flex-col items-center flex gap-2  text-sky-400">
               <span className="flex gap-1 mt-1 items-center text-purple-500">
                 <FaUser />
-                {user?.displayName || user?.email.replace('@gmail.com', '')}
+                {user?.displayName || user?.email.replace("@gmail.com", "")}
               </span>
 
-              <span className="hover:bg-slate-800 hover:text-center  hover:w-full hover:p-1 flex items-center gap-1" 
-              onClick={() => 
-              {
-                if(user){
-
-                  logout()
-                  return;
-                }
-                login()
-
-              }
-                }> <FaArrowAltCircleRight/> {user ? 'Log Out' : 'Log In'}</span>
+              <span
+                className="hover:bg-slate-800 hover:text-center  hover:w-full hover:p-1 flex items-center gap-1"
+                onClick={() => {
+                  if (user) {
+                    logout();
+                    return;
+                  }
+                  login();
+                }}
+              >
+                {" "}
+                <FaArrowAltCircleRight /> {user ? "Log Out" : "Log In"}
+              </span>
             </p>
           </div>
         )}
@@ -123,7 +124,11 @@ const Main = () => {
               <h1 className="text-[#c1719c] font-semibold text-left text-3xl texts">
                 Hello,{" "}
                 <span className="text-[#757add]">
-                  {user ? user?.displayName || user?.email.replace('@gmail.com', ''): "Dev"}
+                  {user
+                    ? user.displayName ||
+                      user.email.split("@")[0].charAt(0).toUpperCase() +
+                        user.email.split("@")[0].slice(1).toLowerCase()
+                    : "Dev"}
                 </span>{" "}
               </h1>
               <p className="text-[#c4c7c5] font-semibold text-2xl texts">
