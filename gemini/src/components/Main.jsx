@@ -37,7 +37,7 @@ const Main = () => {
     input,
   } = useContext(Context);
 
-  // Call your onSent function with the input
+
 
   useEffect(() => {}, [recentPrompt]);
   const [extended, setExtended] = useState(false);
