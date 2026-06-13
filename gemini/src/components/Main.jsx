@@ -99,7 +99,13 @@ const Main = () => {
                 }}
               >
                 {" "}
-                <FaArrowAltCircleRight /> {user ? "Log Out" : "Log In"}
+                <FaArrowAltCircleRight  onClick={() => {
+                  if (user) {
+                    logout();
+                    return;
+                  }
+                  login();
+                }} /> {user ? "Log Out" : "Log In"}
               </span>
             </p>
           </div>
