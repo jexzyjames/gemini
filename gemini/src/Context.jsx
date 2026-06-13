@@ -11,8 +11,8 @@ import {
   } from "firebase/auth";
   import { db, auth,app } from "./config/firebase.js";
   import {
-    GoogleGenAI,
-  } from '@google/genai';
+    GoogleGenerativeAI,
+  } from '@google/generative-ai';
   
 const ContextProvider = (props) => {
   const [input, setInput] = useState("");
@@ -35,7 +35,7 @@ const ContextProvider = (props) => {
     setShowResult(false)
     setPrevPrompt([])
   }
-  const ai = new GoogleGenAI({ apiKey:import.meta.env.VITE_GEMINI_API_KEY
+  const ai = new GoogleGenerativeAI({ apiKey:import.meta.env.VITE_GEMINI_API_KEY
  });
 
 async function getData(input) {
