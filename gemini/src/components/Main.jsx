@@ -181,7 +181,7 @@ const Main = () => {
                     <img className="w-9" src={messageIcon} alt="" />
                   </div>
                 </div>
-                <div className="bg-[#f0f4f9] md:w-[203px] card w-full h-[200px]  relative p-2 rounded-md   ">
+                <div className="bg-[#f0f4f9] md:w-[203px] text-sm card w-full h-[150px]  relative p-2 rounded-md   ">
                   <h1 className="text-xl texts">
                     Tell me about React js and React native
                   </h1>
