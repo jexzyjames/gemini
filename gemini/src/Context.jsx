@@ -4,7 +4,7 @@ import { db, auth, app } from "./config/firebase.js"; // Kept for your Firebase 
 
 export const Context = createContext();
 
-const ContextProvider = (props) => {
+const ContextProvider = ({children}) => {
   const [input, setInput] = useState("");
   const [recentPrompt, setRecentPrompt] = useState("");
   const [prevPrompt, setPrevPrompt] = useState([]);
