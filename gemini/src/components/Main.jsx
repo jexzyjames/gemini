@@ -209,18 +209,24 @@ const Main = () => {
 
                     // debouncedInput(e.target.value);
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      onSent(input);
-                      setInput("");
-                      return;
-                    }
-                    if (e.target.value.trim() !== "") {
-                      setInput(e.target.value);
-                      setLoading(false);
-                      // return;
-                    }
-                  }}
+                 onKeyDown={async (e) => {
+  if (e.key === "Enter") {
+    // 1. Check that the input isn't empty before sending
+    if (input.trim() !== "") {
+      setLoading(true);    // 2. Turn the loader ON immediately
+      await onSent(input); // 3. Await the data fetch completion
+      setLoading(false);   // 4. Turn the loader OFF when done
+      setInput("");
+    }
+    return;
+  }
+  if (e.target.value.trim() !== "") {
+    setInput(e.target.value);
+    setLoading(false);
+    // return;
+  }
+}}
+
                   placeholder="Enter a prompt here"
                 />
 
