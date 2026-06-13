@@ -30,12 +30,6 @@ const ContextProvider = (props) => {
       setResultData((prev) => prev + nextWord);
     }, 75 * i);
   };
-   
- 
-
-
-
-
   const newChat = ()=>{
     setLoading(false)
     setShowResult(false)
@@ -50,7 +44,6 @@ async function getData(input) {
     contents: input,
   });
   console.log(response.text);
-//   setResultData(response.text) 
 return response.text;
 }
 
@@ -66,9 +59,6 @@ const onSent = async (prompt) => {
     setResultData("");
     setLoading(true);
     const currentPrompt = prompt ?? input;
-    // const updatedPrompts = [...prevPrompt, currentPrompt];
-    // setPrevPrompt(updatedPrompts);
-    // localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
     if (!prevPrompt.includes(currentPrompt)) {
       const updatedPrompts = [...prevPrompt, currentPrompt];
       setPrevPrompt(updatedPrompts);
@@ -84,11 +74,7 @@ const onSent = async (prompt) => {
       res = await getData(input);
 setPrevPrompt(prev=> [...prev, input])
       
-      
-      
 }
-
-
     setShowResult(true);
     let responseArr = res.split("**");
     let newRes ='';
@@ -111,52 +97,6 @@ setPrevPrompt(prev=> [...prev, input])
     setLoading(false);
     setInput("");
   };
-
-
-
-
-
-
-//   const onSent = async (prompt) => {
-//     setResultData("");
-//     setLoading(true);
-//     const currentPrompt = prompt ?? input;
-//     setPrevPrompt((prev) => [...prev, currentPrompt]);
-//     setRecentPrompt(currentPrompt);
-  
-//     try {
-//       const res = await main(currentPrompt);
-//       setShowResult(true);
-  
-//       let responseArr = res.split("**");
-//       let newRes = "";
-  
-//       for (let i = 0; i < responseArr.length; i++) {
-//         if (i === 0 || i % 2 !== 1) {
-//           newRes += responseArr[i];
-//         } else {
-//           newRes += "<b>" + responseArr[i] + "</b>";
-//         }
-//       }
-  
-//       let newRes1 = newRes.split("*").join("</br>");
-//       let newResAr = newRes1.split(" ");
-  
-//       for (let i = 0; i < newResAr.length; i++) {
-//         const nextWord = newResAr[i];
-//         delay(i, nextWord + " ");
-//       }
-  
-//       setResultData(newRes1);
-//     } catch (error) {
-//       console.error("Error during request:", error);
-//       // Optional: show an error message in UI
-//     } finally {
-//       setLoading(false);
-//       setInput("");
-//     }
-//   };
-  
   const value = {
     input,
     store,
