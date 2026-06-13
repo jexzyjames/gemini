@@ -213,7 +213,6 @@ const Main = () => {
                     if (e.key === "Enter") {
                       onSent(input);
                       setInput("");
-                      setLoading(false);
                       return;
                     }
                     if (e.target.value.trim() !== "") {
