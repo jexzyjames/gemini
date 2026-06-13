@@ -43,7 +43,7 @@ const Main = () => {
   const [extended, setExtended] = useState(false);
 
   return (
-    <div className=" w-full fade flex m-0 relative h-screen text-black ">
+    <div className=" w-full fade flex m-0 relative min-h-screen text-black ">
       <div
         className={` max-w-[80px] w-[100%] hidden md:block ${
           extended && "w-full max-w-[220px]"
@@ -51,7 +51,7 @@ const Main = () => {
       >
         <Sidebar extended={extended} setExtended={setExtended} />
       </div>
-      <div className="flex flex-col  flex-1 w-full">
+      <div className="flex flex-col relative   flex-1 w-full">
         <div className="flex items-center w-full px-4 justify-between">
           <h2>Gemini</h2>
           <img
@@ -104,7 +104,6 @@ const Main = () => {
             </p>
           </div>
         )}
-        {console.log(user)}
         {popUp && (
           <div className="absolute fade z-1222 left-0 right-0 mx-auto  bottom-0 bg-[#333]  opacity-95 flex justify-center items-center h-screen">
             <div className=" absolute flex justify-center top-[-40%] items-center z-3000 h-screen right-[5%]">
@@ -135,8 +134,6 @@ const Main = () => {
                 How can I help you today?
               </p>
             </div>
-            {/* {loading && <p className=" loaded absolute  text-2xl"></p>} */}
-
             {showResult || loading ? (
               <div className="flex relative  xs:w-[600px] sm:w-[700px] md:w-[600px] lg:w-[900px]  gap-2">
                 {
@@ -150,7 +147,7 @@ const Main = () => {
                   src={user?.photoURL || userImg}
                   alt=""
                 />
-                {loading && <p className=" loaded absolute  text-2xl"></p>}
+                {loading && <p className=" loaded absolute w-[80%]  text-xl"></p>}
 
                 <div
                   dangerouslySetInnerHTML={{ __html: resultData }}
@@ -159,8 +156,8 @@ const Main = () => {
                 />
               </div>
             ) : (
-              <div className="md:flex cards grid grid-cols-2  justify-center  mx-auto items-center max-w-[900px] p-2 w-full gap-3 ">
-                <div className="bg-[#f0f4f9] md:w-[203px] card h-[200px] relative p-2 rounded-md   ">
+              <div className="md:flex cards relative grid grid-cols-2  justify-center  mx-auto items-center max-w-[900px] p-2 w-full gap-3 ">
+                <div className="bg-[#f0f4f9] md:w-[203px] text-sm card h-[150px] relative p-2 rounded-md   ">
                   <h1 className="text-xl texts">
                     Sugest beautiful places to see on an upcoming road trip
                   </h1>
@@ -168,7 +165,7 @@ const Main = () => {
                     <img className="w-9" src={compassIcon} alt="" />
                   </div>
                 </div>
-                <div className="bg-[#f0f4f9] md:w-[203px] card h-[200px]  relative p-2 rounded-md   ">
+                <div className="bg-[#f0f4f9] md:w-[203px] text-sm card h-[150px]  relative p-2 rounded-md   ">
                   <h1 className="text-xl texts">
                     Briefly summarize this concept: urban planning
                   </h1>
@@ -176,7 +173,7 @@ const Main = () => {
                     <img className="w-9" src={bulbIcon} alt="" />
                   </div>
                 </div>
-                <div className="bg-[#f0f4f9] md:w-[203px] sm:text-sm card w-full h-[200px]  relative p-2 rounded-md   ">
+                <div className="bg-[#f0f4f9] text-sm md:w-[203px] sm:text-sm card w-full h-[150px]  relative p-2 rounded-md   ">
                   <h1 className="text-xl  texts">
                     Brainstorm team branding activities for our work retreat
                   </h1>
@@ -202,6 +199,8 @@ const Main = () => {
                   value={input}
                   onChange={(e) => {
                     setInput(e.target.value);
+                      setInput("");
+
                     // debouncedInput(e.target.value);
                   }}
                   onKeyDown={(e) => {
@@ -224,7 +223,7 @@ const Main = () => {
                   <img className="w-4 cursor-pointer" src={galleryIcon} />
                   <img
                     onClick={() => onSent()}
-                    className="w-4 cursor-pointer"
+                    className="w-5 cursor-pointer"
                     src={input ? sendIcon : micIcon}
                   />
                 </div>

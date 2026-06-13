@@ -13,6 +13,7 @@ import {
   import {
     GoogleGenerativeAI,
   } from '@google/generative-ai';
+  import { GoogleGenAI } from '@google/genai';
   
 const ContextProvider = (props) => {
   const [input, setInput] = useState("");
@@ -35,13 +36,14 @@ const ContextProvider = (props) => {
     setShowResult(false)
     setPrevPrompt([])
   }
-  const ai = new GoogleGenerativeAI({ apiKey:process.env.GEMINI_API_KEY
+  const ai = new GoogleGenAI({ apiKey:process.env.VITE_GEMINI_API_KEY
  });
 
 async function getData(input) {
   // Use the standard generative model declaration method:
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const response = await model.generateContent(input);
+  const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
   
   console.log(response.text());
   return response.text();
