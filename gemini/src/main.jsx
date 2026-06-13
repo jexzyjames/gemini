@@ -6,10 +6,9 @@ import ContextProvider from './Context.jsx'
 import { AuthProvider } from './AuthProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <ContextProvider>
     <AuthProvider>
-
+  <ContextProvider>
     <App />
-    </AuthProvider>
   </ContextProvider>,
+    </AuthProvider>
 )
