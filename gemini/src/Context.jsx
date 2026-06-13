@@ -39,14 +39,13 @@ const ContextProvider = (props) => {
  });
 
 async function getData(input) {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: input,
-  });
-  console.log(response.text);
-return response.text;
+  // Use the standard generative model declaration method:
+  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const response = await model.generateContent(input);
+  
+  console.log(response.text());
+  return response.text();
 }
-
 useEffect(() => {
     const savedPrompts = localStorage.getItem('previousPrompts');
     if (savedPrompts) {
