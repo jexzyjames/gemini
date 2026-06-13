@@ -116,7 +116,7 @@ const ContextProvider = (props) => {
     setPrevPrompt,
   };
 
-  return <Context.Provider value={value}>{props.children}</Context.Provider>;
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 
 export default ContextProvider;
