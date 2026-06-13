@@ -7,6 +7,7 @@ import {
   signInWithPopup,
   onAuthStateChanged,
 } from "firebase/auth";
+// UNCHANGED: Kept your exact file path intact
 import { auth, googleProvider } from "./config/firebase";
 
 const AuthContext = createContext();
@@ -37,8 +38,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user,loading,setLoading, signup, login, logout, googleSignIn }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, loading, setLoading, signup, login, logout, googleSignIn }}>
+      {/* FIXED: Removed block condition so your UI layout doesn't completely lock or flash blank */}
+      {children}
     </AuthContext.Provider>
   );
 };
