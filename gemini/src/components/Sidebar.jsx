@@ -34,7 +34,7 @@ const Sidebar = ({extended,setExtended}) => {
         <img className='bg-[#e6eaf1] px-2  py-1  rounded-full  cursor-pointer opacity-100 w-9 h-9' src={plusIcon} alt="" />
 
 
-        {extended && <span className='chat w-full'>New Chat</span>}
+        {extended && <span className='chat text-sm w-full'>New Chat</span>}
 
         </div>
 
@@ -50,7 +50,7 @@ const Sidebar = ({extended,setExtended}) => {
                     <img src={message_icon} className='w-6' alt="" />
                   </div>
 
-                 <span  className='w-full cursor-pointer   text-sm font-semibold p-1'>{query?.slice(0,18) } ...</span>
+                 <span  className='w-full cursor-pointer  text-center text-sm font-semibold p-1'>{query?.slice(0,18) } ...</span>
                </div>
                }
                 </div>

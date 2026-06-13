@@ -45,8 +45,8 @@ const Main = () => {
   return (
     <div className=" w-full fade flex m-0 relative min-h-screen text-black ">
       <div
-        className={` max-w-[80px] w-[100%] hidden md:block ${
-          extended && "w-full max-w-[220px]"
+        className={` max-w-[100px] w-[100%] hidden md:block ${
+          extended && "w-full max-w-[250px]"
         } `}
       >
         <Sidebar extended={extended} setExtended={setExtended} />
@@ -207,7 +207,7 @@ const Main = () => {
                     if (e.key === "Enter") {
                       onSent(input);
                       setInput("");
-
+                      setLoading(false);
                       return;
                     }
                     if (e.target.value.trim() !== "") {

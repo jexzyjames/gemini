@@ -19,7 +19,7 @@ import {
         role: 'user',
         parts: [
           {
-            text: query ,
+            text: query,
           },
         ],
       },

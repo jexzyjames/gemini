@@ -44,8 +44,7 @@ async function getData(input) {
   const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
-  
-  console.log(response.text());
+  })
   return response.text();
 }
 useEffect(() => {
@@ -56,7 +55,6 @@ useEffect(() => {
   }, []);
 
 const onSent = async (prompt) => {
-    // if(!user) return
     setResultData("");
     setLoading(true);
     const currentPrompt = prompt ?? input;
@@ -71,6 +69,7 @@ const onSent = async (prompt) => {
       setRecentPrompt(prompt);
 
     } else {
+    setLoading(false);
       setRecentPrompt(input);
       res = await getData(input);
 setPrevPrompt(prev=> [...prev, input])
@@ -94,7 +93,6 @@ setPrevPrompt(prev=> [...prev, input])
       delay(i, nextWord + " ");
     }
     setResultData(newRes1);
-    console.log(newRes1)
     setLoading(false);
     setInput("");
   };
