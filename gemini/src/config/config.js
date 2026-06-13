@@ -8,7 +8,7 @@ import {
   
   async function main(query) {
     const ai = new GoogleGenAI({
-      apiKey: process.env.VITE_GEMINI_API_KEY,
+      apiKey: import.meta.env.VITE_GEMINI_API_KEY,
     });
     const config = {
       responseMimeType: 'text/plain',
