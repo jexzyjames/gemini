@@ -199,7 +199,7 @@ const Main = () => {
                   value={input}
                   onChange={(e) => {
                     setInput(e.target.value);
-                      setInput("");
+                      
 
                     // debouncedInput(e.target.value);
                   }}
