@@ -35,7 +35,7 @@ const ContextProvider = (props) => {
     setShowResult(false)
     setPrevPrompt([])
   }
-  const ai = new GoogleGenerativeAI({ apiKey:process.env.VITE_GEMINI_API_KEY
+  const ai = new GoogleGenerativeAI({ apiKey:process.env.GEMINI_API_KEY
  });
 
 async function getData(input) {
