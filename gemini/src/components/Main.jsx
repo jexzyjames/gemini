@@ -227,11 +227,16 @@ const Main = () => {
 
                 <div className="flex items-center gap-3  ">
                   <img className="w-4 cursor-pointer" src={galleryIcon} />
-                  <img
-                    onClick={() => onSent()}
-                    className="w-5 cursor-pointer"
-                    src={input ? sendIcon : micIcon}
-                  />
+                <img
+                onClick={() => {
+                if (input.trim()) {
+                onSent();
+               }
+              }}
+             className="w-5 cursor-pointer"
+             src={input ? sendIcon : micIcon}
+            />
+
                 </div>
               </div>
               <p className="text-center sm:text-sm md:text-md lg:text-lg text  font-semibold  texts ">
