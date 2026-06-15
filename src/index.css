@@ -1,0 +1,155 @@
+@import "tailwindcss";
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+.recent::-webkit-scrollbar,.answer::-webkit-scrollbar {
+  display:none !important;
+}
+
+body{
+  margin:auto;
+  box-sizing:border-box;
+  /* min-height: 100vh; */
+  overflow-y: hidden;
+  animation: fadeIn 1s ease-in-out;
+}
+@keyframes fadeIn {
+  0%{
+    opacity:0
+  }
+  100%{
+    opacity:1
+  }
+}
+.loaded{
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  transition: all 0.2s ease-in-out;
+  height:90px;
+  width:90px;
+  border:16px solid #f3f3f3;
+  border-top:16px solid blue;
+  border-right:16px solid green;
+  border-bottom:16px solid red;
+  border-left:16px solid pink;
+  border-radius:50%;
+  /* background: black; */
+  animation: rotate 1s linear infinite;
+  display: flex;
+  justify-content: center;
+}
+.fade{
+  animation: fadeIn 1s ease-in-out;
+  
+}
+.loading{
+  height:120px;
+  width:120px;
+  border:16px solid #f3f3f3;
+  border-top:16px solid blue;
+  border-right:16px solid green;
+  border-bottom:16px solid red;
+  border-left:16px solid pink;
+  border-radius:50%;
+  /* background: black; */
+  animation: rotate 1s linear infinite;
+}
+@keyframes rotate{
+  0%{
+    transform:rotate(0deg)
+
+  }
+  100%{
+    transform:rotate(360deg)
+
+  }
+}
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+.cards{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    transition :all;
+    cursor:pointer;
+    /* padding: 20px; */
+
+}
+.card{
+  transition :all ease-in-out;
+  cursor:pointer;
+}
+.card:hover{
+  transform: scale(1.04);
+  opacity:0.57;
+}
+@media (max-width: 1200px) {
+  .cards{
+    grid-template-columns: repeat(3, 1fr);
+  }
+  body{
+    overflow-y: hidden;
+    overflow-x:hidden;
+  }
+}
+@media (max-width:800px){
+  .extended{
+    font-size:12px !important;
+    width:100%;
+    max-width:280px !important;
+  animation: fadeIn 1s ease-in-out;
+    background: grey;
+  }
+  .chat{
+    /* width:100%; */
+    position:absolute;
+    left:55px;
+    font-size:12px;
+    display:inline-flex;
+    /* background:#ddd; */
+  }
+}
+@media (max-width: 600px) {
+  .cards{
+    grid-template-columns: repeat( 2, 1fr);
+  }
+  .text,body{
+    font-size: 0.8rem !important;
+  }
+  body{
+    overflow-y: scroll;
+  }
+  input{
+    width: 100%;
+    flex:1;
+  }
+}
+@media (max-width:340px){
+  .texts{
+    font-size: 10px !important;
+    
+  }
+  .card{
+    height: 100px;
+  }
+  .card img{
+    width:20px;
+  }
+}
+
+
