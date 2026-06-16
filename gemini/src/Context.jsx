@@ -35,8 +35,8 @@ const ContextProvider = (props) => {
     setShowResult(false)
     setPrevPrompt([])
   }
-  const ai = new GoogleGenerativeAI({ apiKey:process.env.GEMINI_API_KEY
- });
+  const ai = new GoogleGenerativeAI({ apiKey:process.env.VITE_GEMINI_API_KEY
+ }); 
 
 async function getData(input) {
   // Use the standard generative model declaration method:
@@ -71,6 +71,8 @@ const onSent = async (prompt) => {
     } else {
       setRecentPrompt(input);
       res = await getData(input);
+    setLoading(true);
+
 setPrevPrompt(prev=> [...prev, input])
       
 }

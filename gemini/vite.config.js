@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
     define: {
       // Stringify and pass the loaded environment variables to the client
-      'process.env': env
+      'process.env': JSON.stringify(env)
     }
   }
 })
