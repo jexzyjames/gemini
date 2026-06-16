@@ -106,11 +106,11 @@ const Main = () => {
         )}
         {popUp && (
           <div className="absolute fade z-1222 left-0 right-0 mx-auto  bottom-0 bg-[#333]  opacity-95 flex justify-center items-center h-screen">
-            <div className=" absolute flex justify-center top-[-40%] items-center z-3000 h-screen right-[5%]">
+            <div className=" absolute flex justify-center bottom-[35%] items-center z-3000 h-screen right-[8%]">
               <FaTimes
                 onClick={() => setPopUp(false)}
-                className="bg-red-400 block cursor-pointer  rounded-full p-1 z-2000 text-black"
-                size={30}
+                className="bg-red-400 text-white  block cursor-pointer  rounded-full p-1 z-2000 "
+                size={25}
               />
             </div>
             <Login setPopUp={setPopUp} />

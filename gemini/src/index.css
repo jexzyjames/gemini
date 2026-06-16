@@ -26,6 +26,22 @@ body{
     opacity:1
   }
 }
+.loader{
+  transition: all 0.2s ease-in-out;
+  height:20px;
+  width:20px;
+  border:6px solid #f3f3f3;
+  border-top:6px solid blue;
+  border-right:6px solid green;
+  border-bottom:6px solid red;
+  border-left:6px solid pink;
+  border-radius:50%;
+  /* background: black; */
+  animation: rotate 1s linear infinite;
+  display: inline-flex;
+  align-items:center;
+  justify-content: center;
+}
 .loaded{
   position: absolute !important;
   top: 0;

@@ -25,11 +25,15 @@ const Login = ({ setPopUp }) => {
   const { login, googleSignIn } = useAuth();
   // const[signIn,logOut, SignUp, googleSignIn] = useContext(Context)
   const [loading, setLoading] = useState(false);
+  const [loader, setLoader] = useState(false);
 
   const GoogleSignIn = async () => {
     try {
       await googleSignIn();
+    setLoader(true);
       toast.success("Google sign in successfully");
+    setLoader(false);
+
       setPopUp(false);
     } catch (err) {
       toast.error(err);
@@ -42,6 +46,8 @@ const Login = ({ setPopUp }) => {
       await login(email, password);
       toast.success("Logged in!");
       // setPopUp(false);
+    setLoading(false);
+
     } catch (error) {
       toast.error("Login error:", error.message);
     }
@@ -50,7 +56,9 @@ const Login = ({ setPopUp }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    if (!email && !password) {
+    if (!email || !password) {
+      toast.error('must field')
+    setLoading(false);
       return;
     }
 
@@ -67,7 +75,7 @@ const Login = ({ setPopUp }) => {
           onSubmit={(e) => handleLogin(e)}
           className=" flex  justify-center items-center place-items-center p-3  m-auto 3xl:max-w-[600px]    "
         >
-          <div className="w-full  gap-[10px] flex flex-col   bg-white shadow-3xl p-[1.2rem] rounded-xl ">
+          <div className="w-full  gap-[10px] flex flex-col relative   bg-white shadow-3xl p-[1.2rem] rounded-xl ">
             <h1 className="font-bold  text-left text-3xl text-orange-300">
               Login
             </h1>
@@ -131,22 +139,27 @@ const Login = ({ setPopUp }) => {
     <span className="mx-2 text-gray-400">OR</span>
     <div className="border-b border-gray-400 w-30"></div>
 
-    </div>            <div
+    </div>           
+     <div
               onClick={() => GoogleSignIn()}
               className="flex border rounded-3xl w-full justify-center hover:bg-slate-950 hover:text-white my-2 cursor-pointer "
             >
               <p className=" flex gap-2 items-center rounded-xl p-2">
                 {" "}
-                <BiLogoGoogle className="" /> Sign in with Google
+                <BiLogoGoogle className="" /> {loader ? 'loading...' : 'Sign in with Google'}
               </p>
             </div>
 
             <ToastContainer />
+      <div className="cursor-pointer flex items-center justify-center relative  mt-2 hover:bg-slate-900 text-white border rounded-3xl p-2 w-full col-span-2 bg-[#ff2d1c]">
+
             <input
-              className="cursor-pointer mt-2 col-span-2 bg-[#ff2d1c] hover:bg-slate-900 text-white border rounded-3xl p-2 w-full mb-2 "
+              className={` cursor-pointer w-full ${loading  && 'loader cursor-pointer flex ' } `}
               type="submit"
-              value={loading ? "loading" : "Log In"}
-            />
+              value={'Login'}
+            /> 
+      </div>
+  
           </div>
         </form>
       )}

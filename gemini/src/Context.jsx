@@ -35,7 +35,8 @@ const ContextProvider = (props) => {
     setShowResult(false)
     setPrevPrompt([])
   }
-  const ai = new GoogleGenerativeAI({ apiKey:process.env.VITE_GEMINI_API_KEY
+  // console.log("Checking API Key setup:", import.meta.env.VITE_GEMINI_API_KEY);
+  const ai = new GoogleGenerativeAI({ apiKey:import.meta.env.VITE_GEMINI_API_KEY
  }); 
 
 async function getData(input) {

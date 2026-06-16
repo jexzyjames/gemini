@@ -140,7 +140,7 @@ const Register = ({ setLogState }) => {
           <input
             className="cursor-pointer mt-2 col-span-2 bg-[#ff2d1c] hover:bg-slate-900 text-white border rounded-3xl p-2  w-full mb-2 "
             type="submit"
-            value={loading ? "loading" : "Sign Up"}
+            value={loading ? "loading ..." : "Sign Up"}
           />
         </div>
       </form>
