@@ -24,7 +24,7 @@ const Login = ({ setPopUp }) => {
   const [logState, setLogState] = useState(false);
   const { login, googleSignIn } = useAuth();
   // const[signIn,logOut, SignUp, googleSignIn] = useContext(Context)
-  const { loading, setLoading } = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const GoogleSignIn = async () => {
     try {
@@ -41,7 +41,7 @@ const Login = ({ setPopUp }) => {
     try {
       await login(email, password);
       toast.success("Logged in!");
-      setPopUp(false);
+      // setPopUp(false);
     } catch (error) {
       toast.error("Login error:", error.message);
     }
@@ -49,7 +49,7 @@ const Login = ({ setPopUp }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // setLoading(true);
+    setLoading(true);
     if (!email && !password) {
       return;
     }
