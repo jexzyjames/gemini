@@ -16,6 +16,7 @@ import { db, auth, app } from "./config/firebase.js";
 import Register from "./Register";
 import { useAuth } from "./AuthProvider";
 import { ToastContainer, toast } from "react-toastify";
+import { GoogleGenAI } from "@google/genai";
 const Login = ({ setPopUp }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,22 +24,32 @@ const Login = ({ setPopUp }) => {
   const [passRef, setPassRef] = useState("password");
   const [logState, setLogState] = useState(false);
   const { login, googleSignIn } = useAuth();
-  // const[signIn,logOut, SignUp, googleSignIn] = useContext(Context)
+  // const[signIn,logOut, SignUp, googleSignIn] = useContext(Context) 
   const [loading, setLoading] = useState(false);
   const [loader, setLoader] = useState(false);
 
-  const GoogleSignIn = async () => {
-    try {
-      await googleSignIn();
+ const GoogleSignIn =  async () => {
+  try {
     setLoader(true);
-      toast.success("Google sign in successfully");
+    await googleSignIn();
+    toast.success("Google sign in successfully");
+    setPopUp(false); 
+    return;
+  } catch (err) {
+    // Extract the message string safely so it displays nicely in the UI
+    const errorMessage = err?.message || "Google sign in failed. Please try again.";
+    toast.error(errorMessage);
+    console.error("Authentication Error:", err); // Keep for debugging
+    return;
+  } finally {
+    // This block ALWAYS runs, guaranteeing the UI resets correctly
     setLoader(false);
+    setPopUp(false); // Closes popup on both success and error cases
+  }
+   
+ 
+};
 
-      setPopUp(false);
-    } catch (err) {
-      toast.error(err);
-    }
-  };
   useEffect(()=>{},[logState])
 
   const Login = async () => {
@@ -142,12 +153,13 @@ const Login = ({ setPopUp }) => {
     </div>           
      <div
               onClick={() => GoogleSignIn()}
-              className="flex border rounded-3xl w-full justify-center hover:bg-slate-950 hover:text-white my-2 cursor-pointer "
+              className="flex border  item-center rounded-3xl w-full justify-center hover:bg-slate-950 hover:text-white my-2 cursor-pointer "
             >
-              <p className=" flex gap-2 items-center rounded-xl p-2">
+              <p  onClick={() => GoogleSignIn()} className=" flex cursor-pointer gap-2 items-center justify-center rounded-xl p-2">
                 {" "}
-                <BiLogoGoogle className="" /> {loader ? 'loading...' : 'Sign in with Google'}
+                <BiLogoGoogle onClick={()=> GoogleSignIn} className={`cursor-pointer ${loader && 'loader'}`} /> {loader ? '...' : 'Sign in with Google'}
               </p>
+             {/* / {loader ? 'loading...' : 'Sign in with Google'} */}
             </div>
 
             <ToastContainer />
