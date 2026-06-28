@@ -13,7 +13,7 @@ import {
   import {
     GoogleGenerativeAI,
   } from '@google/generative-ai';
-  
+  import { GoogleGenAI } from "@google/genai";
 const ContextProvider = (props) => {
   const [input, setInput] = useState("");
   const [recentPrompt, setRecentPrompt] = useState("");
@@ -36,16 +36,30 @@ const ContextProvider = (props) => {
     setPrevPrompt([])
   }
   // console.log("Checking API Key setup:", import.meta.env.VITE_GEMINI_API_KEY);
-  const ai = new GoogleGenerativeAI({ apiKey:import.meta.env.VITE_GEMINI_API_KEY
- }); 
+//  const ai = new GoogleGenerativeAI({ 
+//   apiKey: import.meta.env.VITE_GEMINI_API_KEY 
+// }); 
+const ai = new GoogleGenAI({ 
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY 
+}); 
 
+// async function getData(input) {
+//   // Use the standard generative model declaration method:
+//   const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+//   const response = await model.generateContent(input);
+//   const text = response.text()
+//   return text;
+// }
 async function getData(input) {
-  // Use the standard generative model declaration method:
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const response = await model.generateContent(input);
+  // Call generateContent directly from the models namespace
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash", // Recommended modern baseline model
+    contents: input            // Key name is strictly pluralized: 'contents'
+  });
   
-  console.log(response.text());
-  return response.text();
+  // Access the text property directly without invoking it as a function
+  const text = response.text; 
+  return text;
 }
 useEffect(() => {
     const savedPrompts = localStorage.getItem('previousPrompts');
@@ -53,6 +67,16 @@ useEffect(() => {
       setPrevPrompt(JSON.parse(savedPrompts));
     }
   }, []);
+const deleteSinglePrompt = (promptToDelete) => {
+  // 1. Filter out the targeted prompt from the current state
+  const updatedPrompts = prevPrompt.filter(prompt => prompt !== promptToDelete);
+  
+  // 2. Update React State
+  setPrevPrompt(updatedPrompts);
+  
+  // 3. Sync the updated list back to localStorage
+  localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
+};
 
 const onSent = async (prompt) => {
     // if(!user) return
@@ -72,7 +96,7 @@ const onSent = async (prompt) => {
     } else {
       setRecentPrompt(input);
       res = await getData(input);
-    setLoading(true);
+    setLoading(false);
 
 setPrevPrompt(prev=> [...prev, input])
       
@@ -106,6 +130,7 @@ setPrevPrompt(prev=> [...prev, input])
     setResultData,
     newChat,
     prevPrompt,
+    deleteSinglePrompt,
     recentPrompt,
     onSent,
     setLoading,
