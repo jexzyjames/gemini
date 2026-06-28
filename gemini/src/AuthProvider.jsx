@@ -25,7 +25,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => signOut(auth);
 
-  const googleSignIn = () => signInWithPopup(auth, googleProvider);
+  const googleSignIn = () => {
+    signInWithPopup(auth, googleProvider) 
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
