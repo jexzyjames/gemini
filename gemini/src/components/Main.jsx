@@ -15,6 +15,8 @@ import Login from "../Login";
 import { FaUser } from "react-icons/fa6";
 import { FaArrowAltCircleRight, FaTimes } from "react-icons/fa";
 import { useAuth } from "../AuthProvider";
+import { queryEqual } from "firebase/firestore";
+import { toast } from "react-toastify";
 const Main = () => {
   const [popUp, setPopUp] = useState(false);
   useEffect(() => {
@@ -37,22 +39,31 @@ const Main = () => {
   } = useContext(Context);
 
   // let nav = useNavigate();
+  useEffect(() => {
+    if(!loading) return
+   
+    return  ()=> { 
+      clearTimeout(tmer)
+    }
+  }, [recentPrompt ]);
 
-  useEffect(() => {}, [recentPrompt]);
+  const send = async ()=>{
+   onSent()
+  }
   const [extended, setExtended] = useState(false);
 
   return (
-    <div className=" w-full fade flex m-0 relative h-screen text-black ">
+    <div className=" w-full fade flex m-0 relative min-h-screen text-black ">
       <div
-        className={` max-w-[120px] w-[100%] hidden md:block ${
-          extended && "w-full max-w-[250px]"
+        className={`max-w-[150px] lg:max-w-[120px] w-[100%] hidden md:block ${
+          extended && "w-full lg:max-w-[200px]"
         } `}
       >
         <Sidebar extended={extended} setExtended={setExtended} />
       </div>
       <div className="flex flex-col  flex-1 w-full">
         <div className="flex items-center w-full px-4 justify-between">
-          <h2>Gemini</h2>
+          <h2 className="texts text-[#757add]">Gemini</h2>
           <img
             onClick={() => {
               if (!user) {
@@ -73,10 +84,20 @@ const Main = () => {
               className="right-2 cursor-pointer flex justify-end"
             >
               {user && (
-                <FaTimes size={20} className="bg-red-400 rounded-full p-2" />
+                <FaTimes
+                  size={20}
+                  className="bg-red-400 text-white text-2xl rounded-full p-2"
+                />
               )}
             </span>
             <img
+              onClick={() => {
+                if (!user) {
+                  setPopUp(true);
+                  return;
+                }
+                setLogOut(!logOut);
+              }}
               className="w-9 flex m-auto items-center justify-center rounded-full"
               src={user?.photoURL || userImg}
               alt=""
@@ -99,14 +120,34 @@ const Main = () => {
                 }}
               >
                 {" "}
-                <FaArrowAltCircleRight /> {user ? "Log Out" : "Log In"}
+                <FaArrowAltCircleRight
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (user) {
+                      logout();
+                      return;
+                    }
+                    setPopUp(true);
+                  }}
+                />
+                <div
+                  onClick={() => {
+                    if (user) {
+                      logout();
+                      return;
+                    }
+                    setPopUp(true);
+                  }}
+                >
+                  {user ? "Log Out" : "Log In"}
+                </div>
               </span>
             </p>
           </div>
         )}
         {popUp && (
           <div className="absolute fade z-1222 left-0 right-0 mx-auto  bottom-0 bg-[#333]  opacity-95 flex justify-center items-center h-screen">
-            <div className=" absolute flex justify-center bottom-[35%] items-center z-3000 h-screen right-[8%]">
+            <div className=" absolute flex justify-center top-[-30%] items-center z-3000 h-screen right-[8%]">
               <FaTimes
                 onClick={() => setPopUp(false)}
                 className="bg-red-400 text-white  block cursor-pointer  rounded-full p-1 z-2000 "
@@ -137,7 +178,7 @@ const Main = () => {
               </div>
             ) : (
               <p className="text-[#c4c7c5] font-semibold text-2xl texts">
-                How can I help you today?
+                <b className="text-[#c1719c]">Hello,</b>How can I help you today?
               </p>
             )}
 
@@ -154,7 +195,7 @@ const Main = () => {
                   src={user?.photoURL || userImg}
                   alt=""
                 />
-                {loading && <p className=" loaded absolute  text-2xl"></p>}
+                {loading && <p className=" loaded absolute  text-sm"></p>}
 
                 <div
                   dangerouslySetInnerHTML={{ __html: resultData }}
@@ -165,15 +206,38 @@ const Main = () => {
             ) : (
               <div className="md:flex cards grid grid-cols-2  justify-center  mx-auto items-center max-w-[900px] p-2 w-full gap-3 ">
                 <div className="bg-[#f0f4f9] md:w-[203px] card h-[200px] relative p-2 rounded-md   ">
-                  <h1 className="text-xl texts">
+                  <h1
+                    onClick={(e) => {
+                      const el = e.currentTarget.innerHTML;
+                      navigator.clipboard.writeText(el);
+                      toast.success("copied");
+                    }}
+                    className="text-xl texts"
+                  >
                     Sugest beautiful places to see on an upcoming road trip
                   </h1>
                   <div className="bottom-2 p-1 bg-white rounded-full  absolute right-1">
-                    <img className="w-9" src={compassIcon} alt="" />
+                    <img
+                      onClick={(e) => {
+                        const el = e.currentTarget.innerHTML;
+                        navigator.clipboard.writeText(el);
+                        toast.success("copied");
+                      }}
+                      className="w-9"
+                      src={compassIcon}
+                      alt=""
+                    />
                   </div>
                 </div>
                 <div className="bg-[#f0f4f9] md:w-[203px] card h-[200px]  relative p-2 rounded-md   ">
-                  <h1 className="text-xl texts">
+                  <h1
+                    onClick={(e) => {
+                      const el = e.currentTarget.innerHTML;
+                      navigator.clipboard.writeText(el);
+                      toast.success("copied");
+                    }}
+                    className="text-xl texts"
+                  >
                     Briefly summarize this concept: urban planning
                   </h1>
                   <div className="bottom-2 bg-white p-1 rounded-full  absolute right-1">
@@ -181,7 +245,14 @@ const Main = () => {
                   </div>
                 </div>
                 <div className="bg-[#f0f4f9] md:w-[203px] sm:text-sm card w-full h-[200px]  relative p-2 rounded-md   ">
-                  <h1 className="text-xl  texts">
+                  <h1
+                    onClick={(e) => {
+                      const el = e.currentTarget.innerHTML;
+                      navigator.clipboard.writeText(el);
+                      toast.success("copied");
+                    }}
+                    className="text-xl  texts"
+                  >
                     Brainstorm team branding activities for our work retreat
                   </h1>
                   <div className="bottom-2 bg-white p-1 rounded-full  absolute right-1">
@@ -189,7 +260,11 @@ const Main = () => {
                   </div>
                 </div>
                 <div className="bg-[#f0f4f9] md:w-[203px] card w-full h-[200px]  relative p-2 rounded-md   ">
-                  <h1 className="text-xl texts">
+                  <h1 onClick={(e) => {
+                      const el = e.currentTarget.innerHTML;
+                      navigator.clipboard.writeText(el);
+                      toast.success("copied");
+                    }} className="text-xl cursor-pointer texts">
                     Tell me about React js and React native
                   </h1>
                   <div className="bottom-2 bg-white p-1 rounded-full  absolute right-1">
@@ -227,18 +302,17 @@ const Main = () => {
                 <div className="flex items-center gap-3  ">
                   <img className="w-4 cursor-pointer" src={galleryIcon} />
                   <img
-                    onClick={() =>{
-                      onSent() 
+                    onClick={() => {
+                      send();
                       setInput("");
-                    } 
-                  }
+                    }}
                     className="w-4 cursor-pointer"
                     src={input ? sendIcon : micIcon}
                   />
                 </div>
               </div>
               <p className="text-center sm:text-sm md:text-md lg:text-lg text  font-semibold  texts ">
-                Lorem  ipsum dolor sit amet consectetur, adipisicing elit.
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit.
               </p>
             </div>
           </div>
