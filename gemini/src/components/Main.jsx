@@ -284,18 +284,14 @@ const Main = () => {
                     // debouncedInput(e.target.value);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      onSent();
-                      setInput("");
-
-                      return;
-                    }
-                    if (e.target.value.trim() !== "") {
-                      setInput(e.target.value);
-                      setLoading(false);
-                      return;
-                    }
-                  }}
+  if (e.key === "Enter") {
+    e.preventDefault();  
+    if (input.trim() !== "") {
+      onSent();  
+    }
+    return;
+  }
+}}
                   placeholder="Enter a prompt here"
                 />
 
