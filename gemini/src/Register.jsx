@@ -58,7 +58,7 @@ const Register = ({ setLogState }) => {
                 onClick={() => setLogState(false)}
                 className="text-blue-500 cursor-pointer text-left"
               >
-                {" "}
+
                 Sign in
               </span>
             </p>{" "}
