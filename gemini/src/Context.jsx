@@ -1,4 +1,4 @@
-import { createContext, useState,useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 export const Context = createContext();
 import {
     getAuth,
@@ -9,11 +9,12 @@ import {
     updateProfile,
     signOut,
   } from "firebase/auth";
-  import { db, auth,app } from "./config/firebase.js";
+  import { db, auth, app } from "./config/firebase.js";
   import {
     GoogleGenerativeAI,
   } from '@google/generative-ai';
   import { GoogleGenAI } from "@google/genai";
+
 const ContextProvider = (props) => {
   const [input, setInput] = useState("");
   const [recentPrompt, setRecentPrompt] = useState("");
@@ -22,107 +23,111 @@ const ContextProvider = (props) => {
   const [resultData, setResultData] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [newInput, setNewInput] = useState([]);
-  const[user, setUser]  = useState(null)
-  let [store]= useState([])
+  const [user, setUser] = useState(null);
+  let [store] = useState([]);
 
   const delay = (i, nextWord) => {
     setTimeout(() => {
       setResultData((prev) => prev + nextWord);
     }, 75 * i);
   };
-  const newChat = ()=>{
-    setLoading(false)
-    setShowResult(false)
-    setPrevPrompt([])
-  }
-  // console.log("Checking API Key setup:", import.meta.env.VITE_GEMINI_API_KEY);
-//  const ai = new GoogleGenerativeAI({ 
-//   apiKey: import.meta.env.VITE_GEMINI_API_KEY 
-// }); 
-const ai = new GoogleGenAI({ 
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY 
-}); 
 
-// async function getData(input) {
-//   // Use the standard generative model declaration method:
-//   const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-//   const response = await model.generateContent(input);
-//   const text = response.text()
-//   return text;
-// }
-async function getData(input) {
-  // Call generateContent directly from the models namespace
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash", // Recommended modern baseline model
-    contents: input            // Key name is strictly pluralized: 'contents'
-  });
-  
-  // Access the text property directly without invoking it as a function
-  const text = response.text; 
-  return text;
-}
-useEffect(() => {
+  const newChat = () => {
+    setLoading(false);
+    setShowResult(false);
+    setResultData("");
+    setInput("");
+    setPrevPrompt([]);
+  };
+
+  const ai = new GoogleGenAI({ 
+    apiKey: import.meta.env.VITE_GEMINI_API_KEY 
+  }); 
+
+  async function getData(input) {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash", 
+        contents: input
+      });
+      
+
+      const text = response.text || response.content || "";
+      console.log("API Response:", text);  // Debug log
+      return text;
+    } catch (error) {
+      console.error("API Error:", error);
+      return "Sorry, I couldn't generate a response. Please try again.";
+    }
+  }
+
+  useEffect(() => {
     const savedPrompts = localStorage.getItem('previousPrompts');
     if (savedPrompts) {
       setPrevPrompt(JSON.parse(savedPrompts));
     }
   }, []);
-const deleteSinglePrompt = (promptToDelete) => {
-  // 1. Filter out the targeted prompt from the current state
-  const updatedPrompts = prevPrompt.filter(prompt => prompt !== promptToDelete);
-  
-  // 2. Update React State
-  setPrevPrompt(updatedPrompts);
-  
-  // 3. Sync the updated list back to localStorage
-  localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
-};
 
-const onSent = async (prompt) => {
-    // if(!user) return
+  const deleteSinglePrompt = (promptToDelete) => {
+    const updatedPrompts = prevPrompt.filter(prompt => prompt !== promptToDelete);
+    setPrevPrompt(updatedPrompts);
+    localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
+  };
+
+  const onSent = async (prompt) => {
     setResultData("");
     setLoading(true);
-    const currentPrompt = prompt ?? input;
+    
+    const currentPrompt = prompt ?? input;  
+    
+    
     if (!prevPrompt.includes(currentPrompt)) {
       const updatedPrompts = [...prevPrompt, currentPrompt];
       setPrevPrompt(updatedPrompts);
       localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
     }
-    let res;
-    if (prompt !== undefined) {
-      res = await getData(prompt);
-      setRecentPrompt(prompt);
-
-    } else {
-      setRecentPrompt(input);
-      res = await getData(input);
-    setLoading(false);
-
-setPrevPrompt(prev=> [...prev, input])
+    
+    try {
       
-}
-    setShowResult(true);
-    let responseArr = res.split("**");
-    let newRes ='';
-    for (let i = 0; i < responseArr.length; i++) {
-      if (i === 0 || i % 2 === 0) {
-        newRes += responseArr[i];
-      } else {
-        newRes += `<b>${responseArr[i]}</b>`;
+      setRecentPrompt(currentPrompt);
+      
+    
+      const res = await getData(currentPrompt);
+      
+      
+      setShowResult(true);
+      
+      let responseArr = res.split("**");
+      let newRes = '';
+      
+      for (let i = 0; i < responseArr.length; i++) {
+        if (i === 0 || i % 2 === 0) {
+          newRes += responseArr[i];
+        } else {
+          newRes += `<b>${responseArr[i]}</b>`;
+        }
       }
+      
+      let newRes1 = newRes.split("*").join("<br/>");
+      let newResAr = newRes1.split(" ");
+    
+      for (let i = 0; i < newResAr.length; i++) {
+        const nextWord = newResAr[i];
+        delay(i, nextWord + " ");
+      }
+      
+      setResultData(newRes1);
+      console.log("Final Result:", newRes1);
+      
+    } catch (error) {
+      console.error("Error sending prompt:", error);
+      setResultData("An error occurred. Please try again.");
+    } finally {
+      setLoading(false); 
+      setInput("");
     }
-    let newRes1 = newRes.split("*").join("<br/>");
-    let newResAr = newRes1.split(" ");
-    // setResultData("");
-    for (let i = 0; i < newResAr.length; i++) {
-      const nextWord = newResAr[i];
-      delay(i, nextWord + " ");
-    }
-    setResultData(newRes1);
-    console.log(newRes1)
-    setLoading(false);
-    setInput("");
   };
+
   const value = {
     input,
     store,
@@ -143,6 +148,8 @@ setPrevPrompt(prev=> [...prev, input])
     setRecentPrompt,
     setPrevPrompt,
   };
+
   return <Context.Provider value={value}>{props.children}</Context.Provider>;
 };
+
 export default ContextProvider;
