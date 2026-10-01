@@ -26,7 +26,6 @@ const Main = () => {
   const { user, logout, login } = useAuth();
 
   const [logOut, setLogOut] = useState(false);
-
   const {
     onSent,
     showResult,
