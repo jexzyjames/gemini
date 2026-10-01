@@ -30,7 +30,7 @@ const ContextProvider = (props) => {
     setTimeout(() => {
       setResultData((prev) => prev + nextWord);
     }, 75 * i);
-  };
+  }; 
 
   const newChat = () => {
     setLoading(false);
