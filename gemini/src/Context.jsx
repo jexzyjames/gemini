@@ -1,19 +1,27 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
+import { GoogleGenAI } from "@google/genai";
+
 export const Context = createContext();
-import {
-    getAuth,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    updateProfile,
-    signOut,
-  } from "firebase/auth";
-  import { db, auth, app } from "./config/firebase.js";
-  import {
-    GoogleGenerativeAI,
-  } from '@google/generative-ai';
-  import { GoogleGenAI } from "@google/genai";
+
+// Created once, not on every render.
+// NOTE: VITE_ keys are visible in the browser bundle. For production,
+// move this call to a backend or serverless function.
+const ai = new GoogleGenAI({
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+});
+
+async function getData(input) {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: input,
+    });
+    return response.text || "";
+  } catch (error) {
+    console.error("API Error:", error);
+    return "Sorry, I couldn't generate a response. Please try again.";
+  }
+}
 
 const ContextProvider = (props) => {
   const [input, setInput] = useState("");
@@ -22,108 +30,88 @@ const ContextProvider = (props) => {
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [newInput, setNewInput] = useState([]);
   const [user, setUser] = useState(null);
-  let [store] = useState([]);
+  const [store] = useState([]);
 
-  const delay = (i, nextWord) => {
-    setTimeout(() => {
-      setResultData((prev) => prev + nextWord);
-    }, 75 * i);
-  }; 
+  const timers = useRef([]);
+
+  const clearTimers = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  };
+
+  // Types the response out word by word
+  const typeOut = (text) => {
+    clearTimers();
+    setResultData("");
+    timers.current = text
+      .split(" ")
+      .map((word, i) =>
+        setTimeout(() => setResultData((prev) => prev + word + " "), 75 * i)
+      );
+  };
 
   const newChat = () => {
+    clearTimers();
     setLoading(false);
     setShowResult(false);
     setResultData("");
     setInput("");
-    setPrevPrompt([]);
+    // prevPrompt is intentionally NOT cleared, so saved history survives
   };
 
-  const ai = new GoogleGenAI({ 
-    apiKey: import.meta.env.VITE_GEMINI_API_KEY 
-  }); 
-
-  async function getData(input) {
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash", 
-        contents: input
-      });
-      
-
-      const text = response.text || response.content || "";
-      console.log("API Response:", text);  // Debug log
-      return text;
-    } catch (error) {
-      console.error("API Error:", error);
-      return "Sorry, I couldn't generate a response. Please try again.";
-    }
-  }
-
+  // Load saved history once
   useEffect(() => {
-    const savedPrompts = localStorage.getItem('previousPrompts');
-    if (savedPrompts) {
-      setPrevPrompt(JSON.parse(savedPrompts));
+    try {
+      const saved = localStorage.getItem("previousPrompts");
+      if (saved) setPrevPrompt(JSON.parse(saved));
+    } catch (e) {
+      console.error("Could not load saved prompts:", e);
     }
   }, []);
 
+  // Clean up timers on unmount
+  useEffect(() => clearTimers, []);
+
   const deleteSinglePrompt = (promptToDelete) => {
-    const updatedPrompts = prevPrompt.filter(prompt => prompt !== promptToDelete);
-    setPrevPrompt(updatedPrompts);
-    localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
+    const updated = prevPrompt.filter((p) => p !== promptToDelete);
+    setPrevPrompt(updated);
+    localStorage.setItem("previousPrompts", JSON.stringify(updated));
   };
 
   const onSent = async (prompt) => {
+    const currentPrompt = prompt ?? input;
+    if (!currentPrompt || !currentPrompt.trim()) return;
+
+    clearTimers();
     setResultData("");
     setLoading(true);
-    
-    const currentPrompt = prompt ?? input;  
-    
-    
+
     if (!prevPrompt.includes(currentPrompt)) {
-      const updatedPrompts = [...prevPrompt, currentPrompt];
-      setPrevPrompt(updatedPrompts);
-      localStorage.setItem('previousPrompts', JSON.stringify(updatedPrompts));
+      const updated = [...prevPrompt, currentPrompt];
+      setPrevPrompt(updated);
+      localStorage.setItem("previousPrompts", JSON.stringify(updated));
     }
-    
+
     try {
-      
       setRecentPrompt(currentPrompt);
-      
-    
       const res = await getData(currentPrompt);
-      
-      
       setShowResult(true);
-      
-      let responseArr = res.split("**");
-      let newRes = '';
-      
-      for (let i = 0; i < responseArr.length; i++) {
-        if (i === 0 || i % 2 === 0) {
-          newRes += responseArr[i];
-        } else {
-          newRes += `<b>${responseArr[i]}</b>`;
-        }
+
+      // **bold** -> <b>, remaining * -> line breaks
+      const parts = res.split("**");
+      let formatted = "";
+      for (let i = 0; i < parts.length; i++) {
+        formatted += i % 2 === 0 ? parts[i] : `<b>${parts[i]}</b>`;
       }
-      
-      let newRes1 = newRes.split("*").join("<br/>");
-      let newResAr = newRes1.split(" ");
-    
-      for (let i = 0; i < newResAr.length; i++) {
-        const nextWord = newResAr[i];
-        delay(i, nextWord + " ");
-      }
-      
-      setResultData(newRes1);
-      console.log("Final Result:", newRes1);
-      
+      formatted = formatted.split("*").join("<br/>");
+
+      typeOut(formatted);
     } catch (error) {
       console.error("Error sending prompt:", error);
       setResultData("An error occurred. Please try again.");
     } finally {
-      setLoading(false); 
+      setLoading(false);
       setInput("");
     }
   };
