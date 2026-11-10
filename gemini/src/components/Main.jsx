@@ -1,157 +1,169 @@
-import React, { useEffect, useState, useCallback, useContext } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import userImg from "../assets/user_icon.png";
 import sendIcon from "../assets/send_icon.png";
-import micIcon from "../assets/mic_icon.png";
 import messageIcon from "../assets/message_icon.png";
 import compassIcon from "../assets/compass_icon.png";
 import bulbIcon from "../assets/bulb_icon.png";
 import codeIcon from "../assets/code_icon.png";
-import debounce from "lodash.debounce";
 import galleryIcon from "../assets/gallery_icon.png";
 import Sidebar from "./Sidebar";
-import { useNavigate } from "react-router-dom";
 import { Context } from "../Context";
 import Login from "../Login";
-import { FaUser } from "react-icons/fa6";
+import { FaBars, FaUser } from "react-icons/fa6";
 import { FaArrowAltCircleRight, FaTimes } from "react-icons/fa";
 import { useAuth } from "../AuthProvider";
-import { queryEqual } from "firebase/firestore";
 import { toast } from "react-toastify";
+
+const renderResponse = (response) =>
+  response.split(/(<b>[\s\S]*?<\/b>|<br\/>)/g).map((part, index) => {
+    if (part === "<br/>") return <br key={index} />;
+    if (part.startsWith("<b>") && part.endsWith("</b>")) {
+      return <b key={index}>{part.slice(3, -4)}</b>;
+    }
+    return part;
+  });
+
+const suggestions = [
+  {
+    prompt: "Suggest beautiful places to see on an upcoming road trip",
+    icon: compassIcon,
+  },
+  {
+    prompt: "Briefly summarize this concept: urban planning",
+    icon: bulbIcon,
+  },
+  {
+    prompt: "Brainstorm team branding activities for our work retreat",
+    icon: messageIcon,
+  },
+  {
+    prompt: "Tell me about React.js and React Native",
+    icon: codeIcon,
+  },
+];
+
 const Main = () => {
   const [popUp, setPopUp] = useState(false);
-  useEffect(() => {
-    let data;
-    data = localStorage.getItem("query");
-  }, []);
-  const { user, logout, login } = useAuth();
+  const { user, logout } = useAuth();
 
   const [logOut, setLogOut] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const mobileMenuButtonRef = useRef(null);
+  const closeMobileSidebar = useCallback(
+    () => setMobileSidebarOpen(false),
+    []
+  );
   const {
     onSent,
     showResult,
     recentPrompt,
     loading,
-    setLoading,
     resultData,
     setInput,
     input,
   } = useContext(Context);
 
-  // let nav = useNavigate();
-  useEffect(() => {
-    if(!loading) return
-   
-    return  ()=> { 
-      clearTimeout(tmer)
+  const copyPrompt = async (prompt) => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      toast.success("Prompt copied");
+    } catch (error) {
+      console.error("Could not copy prompt:", error);
+      toast.error("Could not copy prompt");
     }
-  }, [recentPrompt ]);
+  };
 
-  const send = async ()=>{
-   onSent()
-  }
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setLogOut(false);
+    } catch (error) {
+      console.error("Could not log out:", error);
+      toast.error("Could not log out. Please try again.");
+    }
+  };
+
   const [extended, setExtended] = useState(false);
 
   return (
-    <div className=" w-full fade flex m-0 relative min-h-screen text-black ">
-      <div
-        className={`max-w-[150px] lg:max-w-[120px] w-[100%] hidden md:block ${
-          extended && "w-full lg:max-w-[200px]"
-        } `}
-      >
-        <Sidebar extended={extended} setExtended={setExtended} />
-      </div>
-      <div className="flex flex-col  flex-1 w-full">
-        <div className="flex items-center w-full px-4 justify-between">
+    <div className="relative m-0 flex min-h-dvh w-full text-black">
+      <Sidebar
+        extended={extended}
+        setExtended={setExtended}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={closeMobileSidebar}
+        mobileTriggerRef={mobileMenuButtonRef}
+      />
+      <div className="flex min-w-0 w-full flex-1 flex-col">
+        <div className="flex w-full items-center justify-between px-4">
+          <button
+            type="button"
+            ref={mobileMenuButtonRef}
+            aria-label="Open navigation"
+            aria-expanded={mobileSidebarOpen}
+            onClick={() => setMobileSidebarOpen(true)}
+            className="grid size-10 place-items-center rounded-full text-slate-600 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-indigo-600 md:hidden"
+          >
+            <FaBars aria-hidden="true" size={18} />
+          </button>
           <h2 className="texts text-[#757add]">Gemini</h2>
-          <img
-            onClick={() => {
-              if (!user) {
-                setPopUp(true);
-                return;
-              }
-              setLogOut(!logOut);
-            }}
-            className="w-9 cursor-pointer rounded-full "
-            src={user?.photoURL || userImg}
-            alt="user_img"
-          />
-        </div>
-        {logOut && (
-          <div className="absolute fade right-4 p-2  z-300 top-10 bg-white shadow-md rounded-md">
-            <span
-              onClick={() => setLogOut(!logOut)}
-              className="right-2 cursor-pointer flex justify-end"
-            >
-              {user && (
-                <FaTimes
-                  size={20}
-                  className="bg-red-400 text-white text-2xl rounded-full p-2"
-                />
-              )}
-            </span>
+          <button
+            type="button"
+            aria-label={user ? "Open account menu" : "Log in"}
+            aria-expanded={logOut}
+            onClick={() => (user ? setLogOut((open) => !open) : setPopUp(true))}
+            className="rounded-full"
+          >
             <img
-              onClick={() => {
-                if (!user) {
-                  setPopUp(true);
-                  return;
-                }
-                setLogOut(!logOut);
-              }}
-              className="w-9 flex m-auto items-center justify-center rounded-full"
+              className="w-9 cursor-pointer rounded-full"
               src={user?.photoURL || userImg}
               alt=""
             />
+          </button>
+        </div>
+        {logOut && (
+          <div className="absolute fade right-4 p-2  z-300 top-10 bg-white shadow-md rounded-md">
+            <button
+              type="button"
+              aria-label="Close account menu"
+              onClick={() => setLogOut(false)}
+              className="right-2 cursor-pointer flex justify-end"
+            >
+              <FaTimes
+                size={20}
+                className="bg-red-400 text-white text-2xl rounded-full p-2"
+              />
+            </button>
             <p className="cursor-pointer flex-col items-center flex gap-2  text-sky-400">
               <span className="flex gap-1 mt-1 items-center text-purple-500">
                 <FaUser />
-                {user?.displayName || user?.email.replace("@gmail.com", "")}
+                {user?.displayName || user?.email?.split("@")[0] || "Account"}
               </span>
 
-              <span
-                className="hover:bg-slate-800 hover:text-center  hover:w-full hover:p-1 flex items-center gap-1"
-                onClick={() => {
-                  if (user) {
-                    logout();
-                    return;
-                  }
-                  login();
-                  // nav("/");
-                }}
+              <button
+                type="button"
+                className="hover:bg-slate-800 hover:text-center hover:w-full hover:p-1 flex items-center gap-1"
+                onClick={handleLogout}
               >
-                {" "}
                 <FaArrowAltCircleRight
                   className="cursor-pointer"
-                  onClick={() => {
-                    if (user) {
-                      logout();
-                      return;
-                    }
-                    setPopUp(true);
-                  }}
                 />
-                <div
-                  onClick={() => {
-                    if (user) {
-                      logout();
-                      return;
-                    }
-                    setPopUp(true);
-                  }}
-                >
-                  {user ? "Log Out" : "Log In"}
-                </div>
-              </span>
+                Log Out
+              </button>
             </p>
           </div>
         )}
         {popUp && (
           <div className="absolute fade z-1222 left-0 right-0 mx-auto  bottom-0 bg-[#333]  opacity-95 flex justify-center items-center h-screen">
-            <div className=" absolute flex justify-center top-[-30%] items-center z-3000 h-screen right-[8%]">
-              <FaTimes
+            <div className=" absolute flex justify-center lg:top-[-12%]   top-[-46%] items-center z-3000 h-screen lg:right-[30%] right-[4%]">
+              <button
+                type="button"
+                aria-label="Close login"
                 onClick={() => setPopUp(false)}
-                className="bg-red-400 text-white  block cursor-pointer  rounded-full p-1 z-2000 "
-                size={25}
-              />
+                className="bg-red-400 text-white block cursor-pointer rounded-full p-1 z-2000"
+              >
+                <FaTimes size={25} />
+              </button>
             </div>
             <Login setPopUp={setPopUp} />
           </div>
@@ -184,7 +196,7 @@ const Main = () => {
             {showResult || loading ? (
               <div className="flex relative  xs:w-[600px] sm:w-[700px] md:w-[600px] lg:w-[900px]  gap-4">
                 {
-                  <p className="text-[#c1719c] absolute top-[-10px] mb-5 leading-relaxed flex gap-6 items-center  text-lg font-semibold">
+                  <p className="text-[#c1719c] absolute top-[-14px] mb-16 leading-relaxed flex gap-6 items-center text-sm md:text-md font-semibold">
                     Q: {recentPrompt || input}
                   </p>
                 }
@@ -197,117 +209,61 @@ const Main = () => {
                 {loading && <p className=" loaded absolute  text-sm"></p>}
 
                 <div
-                  dangerouslySetInnerHTML={{ __html: resultData }}
                   style={{ whiteSpace: "pre-line" }}
                   className=" mt-9  w-full overflow-scroll overflow-x-hidden answer h-[60vh]  text-md"
-                />
+                >
+                  {renderResponse(resultData)}
+                </div>
               </div>
             ) : (
               <div className="md:flex cards grid grid-cols-2  justify-center  mx-auto items-center max-w-[900px] p-2 w-full gap-3 ">
-                <div className="bg-[#f0f4f9] md:w-[203px] card h-[200px] relative p-2 rounded-md   ">
-                  <h1
-                    onClick={(e) => {
-                      const el = e.currentTarget.innerHTML;
-                      navigator.clipboard.writeText(el);
-                      toast.success("copied");
-                    }}
-                    className="text-xl texts"
+                {suggestions.map(({ prompt, icon }) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => void copyPrompt(prompt)}
+                    aria-label={`Copy prompt: ${prompt}`}
+                    className="bg-[#f0f4f9] md:w-[203px] card w-full h-[200px] relative p-2 rounded-md text-left cursor-pointer"
                   >
-                    Sugest beautiful places to see on an upcoming road trip
-                  </h1>
-                  <div className="bottom-2 p-1 bg-white rounded-full  absolute right-1">
-                    <img
-                      onClick={(e) => {
-                        const el = e.currentTarget.innerHTML;
-                        navigator.clipboard.writeText(el);
-                        toast.success("copied");
-                      }}
-                      className="w-9"
-                      src={compassIcon}
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div className="bg-[#f0f4f9] md:w-[203px] card h-[200px]  relative p-2 rounded-md   ">
-                  <h1
-                    onClick={(e) => {
-                      const el = e.currentTarget.innerHTML;
-                      navigator.clipboard.writeText(el);
-                      toast.success("copied");
-                    }}
-                    className="text-xl texts"
-                  >
-                    Briefly summarize this concept: urban planning
-                  </h1>
-                  <div className="bottom-2 bg-white p-1 rounded-full  absolute right-1">
-                    <img className="w-9" src={bulbIcon} alt="" />
-                  </div>
-                </div>
-                <div className="bg-[#f0f4f9] md:w-[203px] sm:text-sm card w-full h-[200px]  relative p-2 rounded-md   ">
-                  <h1
-                    onClick={(e) => {
-                      const el = e.currentTarget.innerHTML;
-                      navigator.clipboard.writeText(el);
-                      toast.success("copied");
-                    }}
-                    className="text-xl  texts"
-                  >
-                    Brainstorm team branding activities for our work retreat
-                  </h1>
-                  <div className="bottom-2 bg-white p-1 rounded-full  absolute right-1">
-                    <img className="w-9" src={messageIcon} alt="" />
-                  </div>
-                </div>
-                <div className="bg-[#f0f4f9] md:w-[203px] card w-full h-[200px]  relative p-2 rounded-md   ">
-                  <h1 onClick={(e) => {
-                      const el = e.currentTarget.innerHTML;
-                      navigator.clipboard.writeText(el);
-                      toast.success("copied");
-                    }} className="text-xl cursor-pointer texts">
-                    Tell me about React js and React native
-                  </h1>
-                  <div className="bottom-2 bg-white p-1 rounded-full  absolute right-1">
-                    <img className="w-9" src={codeIcon} alt="" />
-                  </div>
-                </div>
+                    <span className="text-xl texts">{prompt}</span>
+                    <span className="bottom-2 bg-white p-1 rounded-full absolute right-1">
+                      <img className="w-9" src={icon} alt="" />
+                    </span>
+                  </button>
+                ))}
               </div>
             )}
             <div className="  md:w-[100%] m-0 w-[100%] md:max-w-[900px]  absolute bottom-2 z-222 md:bottom-20   ">
-              <div className="rounded-3xl texts relative  justify-between  items-center  flex  bg-[#f0f4f9] p-3">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!loading) void onSent();
+                }}
+                className="rounded-3xl texts relative justify-between items-center flex bg-[#f0f4f9] p-3"
+              >
                 <input
                   className=" outline-0  md:w-full border-0 font-semibold"
                   type="text"
+                  aria-label="Enter a prompt"
                   value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    // debouncedInput(e.target.value);
-                  }}
-                  onKeyDown={(e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();  
-    if (input.trim() !== "") {
-      onSent();  
-    }
-    return;
-  }
-}}
+                  onChange={(event) => setInput(event.target.value)}
                   placeholder="Enter a prompt here"
                 />
 
                 <div className="flex items-center gap-3  ">
-                  <img className="w-4 cursor-pointer" src={galleryIcon} />
-                  <img
-                    onClick={() => {
-                      send();
-                      setInput("");
-                    }}
-                    className="w-4 cursor-pointer"
-                    src={input ? sendIcon : micIcon}
-                  />
+                  <img className="w-4" src={galleryIcon} alt="" />
+                  <button
+                    type="submit"
+                    aria-label="Send prompt"
+                    disabled={!input.trim() || loading}
+                    className="disabled:opacity-50"
+                  >
+                    <img className="w-4" src={sendIcon} alt="" />
+                  </button>
                 </div>
-              </div>
+              </form>
               <p className="text-center sm:text-sm md:text-md lg:text-lg text  font-semibold  texts ">
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                Gemini may make mistakes. Check important information.
               </p>
             </div>
           </div>

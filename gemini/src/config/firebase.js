@@ -7,14 +7,6 @@ import { getStorage } from "firebase/storage";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-const firebase = {
-  apiKey:process.env.REACT_APP_FIREBASE_KEY,
-  authDomain: "consoleauths.firebaseapp.com",
-  projectId: "consoleauths",
-  storageBucket: "consoleauths.appspot.com",
-  messagingSenderId: "12904864693",
-  appId: "1:12904864693:web:6c69c38772252b3662d7fc"
-};
 const firebaseConfig = {
   apiKey: "AIzaSyCxKO85EunTCXr1yEBMFsF0TM52lFdTz8g",
   authDomain: "consoleauths.firebaseapp.com",
@@ -32,4 +24,3 @@ const googleProvider = new GoogleAuthProvider();
 const db = getFirestore(app);
 const storage = getStorage(app);
 export {db,app,googleProvider, storage, auth}
-export default firebase;

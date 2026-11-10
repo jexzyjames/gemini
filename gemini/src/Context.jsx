@@ -6,21 +6,52 @@ export const Context = createContext();
 // Created once, not on every render.
 // NOTE: VITE_ keys are visible in the browser bundle. For production,
 // move this call to a backend or serverless function.
-const ai = new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY,
-});
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 async function getData(input) {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: input,
-    });
-    return response.text || "";
-  } catch (error) {
-    console.error("API Error:", error);
-    return "Sorry, I couldn't generate a response. Please try again.";
+  if (!ai) {
+    throw new Error("Missing VITE_GEMINI_API_KEY. Add it to .env and restart Vite.");
   }
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3.6-flash",
+    contents: input,
+  });
+  return response.text || "";
+}
+
+function getRequestErrorMessage(error) {
+  const message = error?.message || "";
+  const statusMatch = message.match(/got status:\s*(\d{3})/i);
+  const status =
+    error?.status ??
+    error?.code ??
+    error?.error?.code ??
+    (statusMatch ? Number(statusMatch[1]) : undefined);
+
+  if (
+    status === 401 ||
+    /API key not valid|ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(message)
+  ) {
+    return "Gemini rejected the configured credential. Create a Gemini API key in Google AI Studio, replace VITE_GEMINI_API_KEY in .env, and restart Vite.";
+  }
+  if (status === 403) {
+    return "This Gemini API key is not authorized. Check its API restrictions and Gemini API access in Google AI Studio.";
+  }
+  if (status === 429) {
+    return "Gemini API quota exceeded. Check your Google AI Studio quota and billing.";
+  }
+  if (status === 404) {
+    return "The selected Gemini model is unavailable. Check the model name and API access.";
+  }
+  if (status) {
+    return `Gemini request failed (HTTP ${status}). Please try again later.`;
+  }
+  if (error?.message?.startsWith("Missing VITE_GEMINI_API_KEY")) {
+    return error.message;
+  }
+  return "Could not connect to Gemini. Check your network connection and try again.";
 }
 
 const ContextProvider = (props) => {
@@ -108,8 +139,12 @@ const ContextProvider = (props) => {
 
       typeOut(formatted);
     } catch (error) {
-      console.error("Error sending prompt:", error);
-      setResultData("An error occurred. Please try again.");
+      console.error("Gemini request failed:", {
+        status: error?.status,
+        name: error?.name,
+      });
+      setShowResult(true);
+      setResultData(getRequestErrorMessage(error));
     } finally {
       setLoading(false);
       setInput("");

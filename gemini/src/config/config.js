@@ -7,13 +7,18 @@ import {
   } from '@google/genai';
   
   async function main(query) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+    if (!apiKey) {
+      throw new Error("Missing VITE_GEMINI_API_KEY. Add it to .env and restart Vite.");
+    }
+
     const ai = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey,
     });
     const config = {
       responseMimeType: 'text/plain',
     };
-    const model = 'gemini-2.5-pro-preview-03-25';
+    const model = 'gemini-3.6-flash';
     const contents = [
       {
         role: 'user',
