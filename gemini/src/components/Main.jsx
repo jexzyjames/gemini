@@ -15,10 +15,9 @@ import { useAuth } from "../AuthProvider";
 import { toast } from "react-toastify";
 
 const renderResponse = (response) =>
-  response.split(/(<b>[\s\S]*?<\/b>|<br\/>)/g).map((part, index) => {
-    if (part === "<br/>") return <br key={index} />;
-    if (part.startsWith("<b>") && part.endsWith("</b>")) {
-      return <b key={index}>{part.slice(3, -4)}</b>;
+  response.split(/(\*\*[\s\S]+?\*\*)/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <b key={index}>{part.slice(2, -2)}</b>;
     }
     return part;
   });
@@ -59,6 +58,7 @@ const Main = () => {
     recentPrompt,
     loading,
     resultData,
+    responseSources,
     setInput,
     input,
   } = useContext(Context);
@@ -86,7 +86,7 @@ const Main = () => {
   const [extended, setExtended] = useState(false);
 
   return (
-    <div className="relative m-0 flex min-h-dvh w-full text-black">
+    <div className="relative m-0 flex h-dvh min-h-0 w-full overflow-hidden text-black">
       <Sidebar
         extended={extended}
         setExtended={setExtended}
@@ -94,8 +94,8 @@ const Main = () => {
         onMobileClose={closeMobileSidebar}
         mobileTriggerRef={mobileMenuButtonRef}
       />
-      <div className="flex min-w-0 w-full flex-1 flex-col">
-        <div className="flex w-full items-center justify-between px-4">
+      <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col">
+        <div className="flex w-full shrink-0 items-center justify-between px-4">
           <button
             type="button"
             ref={mobileMenuButtonRef}
@@ -169,80 +169,118 @@ const Main = () => {
           </div>
         )}
 
-        <div className="flex w-full  hero relative md:h-screen  px-3 flex-col mx-auto   justify-center">
-          <div className=" mx-auto  h-screen wrapper relative max-w-[900px] flex flex-col gap-5 md:gap-6">
-            {user ? (
-              <div className="items-left  flex-col relative flex justify-items-start">
-                <h1 className="text-[#c1719c] font-semibold text-left text-3xl texts">
-                  Hello,{" "}
-                  <span className="text-[#757add]">
-                    {user
-                      ? user.displayName ||
-                        user.email.split("@")[0].charAt(0).toUpperCase() +
-                          user.email.split("@")[0].slice(1).toLowerCase()
-                      : "Dev"}
-                  </span>{" "}
-                </h1>
-                <p className="text-[#c4c7c5] font-semibold text-2xl texts">
-                  How can I help you today?
-                </p>
-              </div>
-            ) : (
-              <p className="text-[#c4c7c5] font-semibold text-2xl texts">
-                <b className="text-[#c1719c]">Hello,</b>How can I help you today?
-              </p>
-            )}
+        <main className="flex min-h-0 flex-1 flex-col">
+          <section className="min-h-0 flex-1 overflow-y-auto px-4">
+            <div className="mx-auto flex min-h-full w-full max-w-[900px] flex-col justify-center gap-5 py-6 md:gap-6">
+              {!showResult && !loading && (
+                user ? (
+                  <div className="flex flex-col">
+                    <h1 className="text-left text-3xl font-semibold text-[#c1719c] texts">
+                      Hello,{" "}
+                      <span className="text-[#757add]">
+                        {user.displayName ||
+                          user.email?.split("@")[0]?.replace(/^./, (letter) =>
+                            letter.toUpperCase()
+                          ) ||
+                          "there"}
+                      </span>
+                    </h1>
+                    <p className="text-2xl font-semibold text-[#c4c7c5] texts">
+                      How can I help you today?
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-semibold text-[#c4c7c5] texts">
+                    <b className="text-[#c1719c]">Hello,</b> How can I help you
+                    today?
+                  </p>
+                )
+              )}
 
-            {showResult || loading ? (
-              <div className="flex relative  xs:w-[600px] sm:w-[700px] md:w-[600px] lg:w-[900px]  gap-4">
-                {
-                  <p className="text-[#c1719c] absolute top-[-14px] mb-16 leading-relaxed flex gap-6 items-center text-sm md:text-md font-semibold">
+              {showResult || loading ? (
+                <section
+                  aria-label="Conversation response"
+                  className="flex min-h-0 w-full flex-1 flex-col gap-3"
+                >
+                  <p className="shrink-0 break-words text-sm font-semibold leading-relaxed text-[#c1719c] md:text-base">
                     Q: {recentPrompt || input}
                   </p>
-                }
-
-                <img
-                  className="w-8 h-8 mt-9 rounded-full"
-                  src={user?.photoURL || userImg}
-                  alt=""
-                />
-                {loading && <p className=" loaded absolute  text-sm"></p>}
-
-                <div
-                  style={{ whiteSpace: "pre-line" }}
-                  className=" mt-9  w-full overflow-scroll overflow-x-hidden answer h-[60vh]  text-md"
-                >
-                  {renderResponse(resultData)}
+                  <div className="flex min-h-0 flex-1 items-start gap-3">
+                    <img
+                      className="mt-1 size-8 shrink-0 rounded-full"
+                      src={user?.photoURL || userImg}
+                      alt=""
+                    />
+                    <div
+                      role="log"
+                      aria-live="polite"
+                      aria-busy={loading}
+                      className="answer min-h-0 w-full flex-1 overflow-y-auto whitespace-pre-wrap break-words text-base"
+                    >
+                      {loading && !resultData ? (
+                        <span className="text-slate-500">Generating response…</span>
+                      ) : (
+                        renderResponse(resultData)
+                      )}
+                      {responseSources.length > 0 && (
+                        <section
+                          aria-label="Sources"
+                          className="mt-6 border-t border-slate-200 pt-3"
+                        >
+                          <h2 className="mb-2 text-sm font-semibold text-slate-700">
+                            Sources
+                          </h2>
+                          <ul className="space-y-1">
+                            {responseSources.map(({ title, uri }) => (
+                              <li key={uri}>
+                                <a
+                                  href={uri}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="break-all text-sm text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
+                                >
+                                  {title}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              ) : (
+                <div className="grid w-full grid-cols-2 justify-center gap-3 md:grid-cols-4">
+                  {suggestions.map(({ prompt, icon }) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => void copyPrompt(prompt)}
+                      aria-label={`Copy prompt: ${prompt}`}
+                      className="card relative min-h-28 rounded-md bg-[#f0f4f9] p-3 text-left cursor-pointer sm:min-h-36 md:min-h-48"
+                    >
+                      <span className="text-base texts sm:text-lg">{prompt}</span>
+                      <span className="absolute bottom-2 right-2 rounded-full bg-white p-1">
+                        <img className="w-8 sm:w-9" src={icon} alt="" />
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              </div>
-            ) : (
-              <div className="md:flex cards grid grid-cols-2  justify-center  mx-auto items-center max-w-[900px] p-2 w-full gap-3 ">
-                {suggestions.map(({ prompt, icon }) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() => void copyPrompt(prompt)}
-                    aria-label={`Copy prompt: ${prompt}`}
-                    className="bg-[#f0f4f9] md:w-[203px] card w-full h-[200px] relative p-2 rounded-md text-left cursor-pointer"
-                  >
-                    <span className="text-xl texts">{prompt}</span>
-                    <span className="bottom-2 bg-white p-1 rounded-full absolute right-1">
-                      <img className="w-9" src={icon} alt="" />
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="  md:w-[100%] m-0 w-[100%] md:max-w-[900px]  absolute bottom-2 z-222 md:bottom-20   ">
+              )}
+            </div>
+          </section>
+
+          <footer className="w-full shrink-0 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-5">
+            <div className="mx-auto w-full max-w-[900px]">
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (!loading) void onSent();
                 }}
-                className="rounded-3xl texts relative justify-between items-center flex bg-[#f0f4f9] p-3"
+                className="flex items-center gap-3 rounded-3xl bg-[#f0f4f9] p-3"
               >
                 <input
-                  className=" outline-0  md:w-full border-0 font-semibold"
+                  className="min-w-0 flex-1 border-0 bg-transparent font-semibold outline-0"
                   type="text"
                   aria-label="Enter a prompt"
                   value={input}
@@ -250,24 +288,22 @@ const Main = () => {
                   placeholder="Enter a prompt here"
                 />
 
-                <div className="flex items-center gap-3  ">
-                  <img className="w-4" src={galleryIcon} alt="" />
-                  <button
-                    type="submit"
-                    aria-label="Send prompt"
-                    disabled={!input.trim() || loading}
-                    className="disabled:opacity-50"
-                  >
-                    <img className="w-4" src={sendIcon} alt="" />
-                  </button>
-                </div>
+                <img className="w-4 shrink-0" src={galleryIcon} alt="" />
+                <button
+                  type="submit"
+                  aria-label="Send prompt"
+                  disabled={!input.trim() || loading}
+                  className="shrink-0 disabled:opacity-50"
+                >
+                  <img className="w-4" src={sendIcon} alt="" />
+                </button>
               </form>
-              <p className="text-center sm:text-sm md:text-md lg:text-lg text  font-semibold  texts ">
+              <p className="mt-2 text-center text-xs font-semibold texts sm:text-sm">
                 Gemini may make mistakes. Check important information.
               </p>
             </div>
-          </div>
-        </div>
+          </footer>
+        </main>
       </div>
     </div>
   );

@@ -9,6 +9,9 @@ export const Context = createContext();
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
+const responseInstructions =
+  "You are a capable, current assistant. Answer the user's actual question directly, with useful detail appropriate to its complexity. For facts that may have changed, use Google Search and prefer recent, authoritative sources. Distinguish verified facts from uncertainty, never invent sources or details, and use clear headings or lists when they improve readability.";
+
 async function getData(input) {
   if (!ai) {
     throw new Error("Missing VITE_GEMINI_API_KEY. Add it to .env and restart Vite.");
@@ -17,8 +20,27 @@ async function getData(input) {
   const response = await ai.models.generateContent({
     model: "gemini-3.6-flash",
     contents: input,
+    config: {
+      systemInstruction: responseInstructions,
+      tools: [{ googleSearch: {} }],
+      temperature: 0.4,
+    },
   });
-  return response.text || "";
+  const groundingChunks =
+    response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+  const sources = groundingChunks
+    .map((chunk) => chunk.web)
+    .filter(
+      (source) =>
+        source?.title && /^https?:\/\//i.test(source.uri || "")
+    )
+    .filter(
+      (source, index, list) =>
+        list.findIndex((item) => item.uri === source.uri) === index
+    )
+    .map(({ title, uri }) => ({ title, uri }));
+
+  return { text: response.text || "", sources };
 }
 
 function getRequestErrorMessage(error) {
@@ -60,6 +82,7 @@ const ContextProvider = (props) => {
   const [prevPrompt, setPrevPrompt] = useState([]);
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState("");
+  const [responseSources, setResponseSources] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [user, setUser] = useState(null);
   const [store] = useState([]);
@@ -87,6 +110,7 @@ const ContextProvider = (props) => {
     setLoading(false);
     setShowResult(false);
     setResultData("");
+    setResponseSources([]);
     setInput("");
     // prevPrompt is intentionally NOT cleared, so saved history survives
   };
@@ -116,6 +140,7 @@ const ContextProvider = (props) => {
 
     clearTimers();
     setResultData("");
+    setResponseSources([]);
     setLoading(true);
 
     if (!prevPrompt.includes(currentPrompt)) {
@@ -126,24 +151,18 @@ const ContextProvider = (props) => {
 
     try {
       setRecentPrompt(currentPrompt);
-      const res = await getData(currentPrompt);
+      const { text, sources } = await getData(currentPrompt);
       setShowResult(true);
+      setResponseSources(sources);
 
-      // **bold** -> <b>, remaining * -> line breaks
-      const parts = res.split("**");
-      let formatted = "";
-      for (let i = 0; i < parts.length; i++) {
-        formatted += i % 2 === 0 ? parts[i] : `<b>${parts[i]}</b>`;
-      }
-      formatted = formatted.split("*").join("<br/>");
-
-      typeOut(formatted);
+      typeOut(text);
     } catch (error) {
       console.error("Gemini request failed:", {
         status: error?.status,
         name: error?.name,
       });
       setShowResult(true);
+      setResponseSources([]);
       setResultData(getRequestErrorMessage(error));
     } finally {
       setLoading(false);
@@ -168,6 +187,7 @@ const ContextProvider = (props) => {
     showResult,
     setUser,
     resultData,
+    responseSources,
     setRecentPrompt,
     setPrevPrompt,
   };
